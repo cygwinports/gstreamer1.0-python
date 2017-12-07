@@ -1,0 +1,52 @@
+inherit python2 python3 gstreamer
+
+NAME="gstreamer1.0-python"
+VERSION=1.12.3
+RELEASE=1
+CATEGORY="Python"
+SUMMARY="Python GStreamer plugin loader"
+DESCRIPTION="Python bindings and loader for the GStreamer 1.0 libraries"
+SRC_URI="http://gstreamer.freedesktop.org/src/gst-python/gst-python-${VERSION}.tar.xz"
+SRC_URI+=" http://cgit.freedesktop.org/gstreamer/gst-python/plain/autogen.sh"
+SRC_DIR="gst-python-${VERSION}"
+
+PKG_NAMES="${NAME} python2-gst1.0 python3-gst1.0"
+gstreamer1_0_python_REQUIRES="python3-gst1.0"
+gstreamer1_0_python_CONTENTS="
+	usr/lib/gstreamer-1.0/cyggstpythonplugin.*.dll
+	usr/share/doc/${NAME}
+"
+python2_gst1_0_SUMMARY="Python 2 GStreamer introspection overrides"
+python2_gst1_0_REQUIRES="girepository-GLib2.0 girepository-Gst1.0 python2-gi"
+python2_gst1_0_CONTENTS="${PYTHON2_SITELIB#/}/gi/overrides/"
+python3_gst1_0_SUMMARY="Python 3 GStreamer introspection overrides"
+python3_gst1_0_REQUIRES="girepository-GLib2.0 girepository-Gst1.0 python3-gi"
+python3_gst1_0_CONTENTS="${PYTHON3_SITELIB#/}/gi/overrides/"
+
+CYGPORT_USE_UNSTABLE_API=1
+src_unpack_hook() {
+	chmod +x autogen.sh
+}
+
+src_compile() {
+	cd ${S}
+	gstreamer_autoreconf
+
+	mkdir -p ${B}/py2
+	cd ${B}/py2
+	cygconf --with-libpython-dir=/usr/bin PYTHON=${PYTHON2}
+	cygmake LIBS="-module -no-undefined ${LIBPYTHON2} -lgmodule-2.0"
+
+	mkdir -p ${B}/py3
+	cd ${B}/py3
+	cygconf --with-libpython-dir=/usr/bin PYTHON=${PYTHON3}
+	cygmake LIBS="-module -no-undefined ${LIBPYTHON3} -lgmodule-2.0"
+}
+
+src_install() {
+	cd ${B}/py2
+	# there can only be one plugin loader
+	cyginstall plugin_LTLIBRARIES=
+	cd ${B}/py3
+	cyginstall
+}

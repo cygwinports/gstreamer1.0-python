@@ -1,7 +1,7 @@
 inherit python2 python3 gstreamer
 
 NAME="gstreamer1.0-python"
-VERSION=1.12.3
+VERSION=1.12.4
 RELEASE=1
 CATEGORY="Python"
 SUMMARY="Python GStreamer plugin loader"
